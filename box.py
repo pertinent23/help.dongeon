@@ -8,7 +8,7 @@ class Box:
         self._point1 = point
     
     def setPoin2(self, point:Pos2D):
-        self.point2 = point
+        self._point2 = point
     
     def getPoin1(self):
         return self._point1
