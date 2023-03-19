@@ -43,7 +43,7 @@ class DungeonGenerator:
     def _create_grid(self):
         self.grid = Grid(self.width, self.height)
     
-    def _present(self, pile:list[tuple(Pos2D)], pos:Pos2D):
+    def _present(self, pile:list[tuple[Pos2D]], pos:Pos2D):
         for item in pile:
             if item[0] == pos:
                 return True
@@ -53,29 +53,30 @@ class DungeonGenerator:
         haut = box.getPoin1()
         bas = box.getPoin2()
         n = 0
+        p = 8
         
         while n < self.openings:
             for y in range(haut.getY(), bas.getY()+1):
                 
                 pos = Pos2D(haut.getX(), y)
-                if n < self.openings and randint(0, 10) > 6 and not self._present(self.openinsList, pos):
+                if n < self.openings and randint(0, 10) > p and not self._present(self.openinsList, pos):
                     self.openinsList.append((pos, Pos2D(pos.getX()-1, pos.getY())))
                     n+=1
                 
                 pos = Pos2D(bas.getX(), y)
-                if n < self.openings and randint(0, 10) > 6 and not self._present(self.openinsList, pos):
+                if n < self.openings and randint(0, 10) > p and not self._present(self.openinsList, pos):
                     self.openinsList.append((pos, Pos2D(pos.getX()+1, pos.getY())))
                     n+=1
             
             for x in range(haut.getX(), bas.getX()+1):
                 
                 pos = Pos2D(x, haut.getY())
-                if n < self.openings and randint(0, 10) > 6 and not self._present(self.openinsList, pos):
+                if n < self.openings and randint(0, 10) > p and not self._present(self.openinsList, pos):
                     self.openinsList.append((pos, Pos2D(pos.getX(), pos.getY()-1)))
                     n+=1
                 
                 pos = Pos2D(x, bas.getY())
-                if n < self.openings and randint(0, 10) > 6 and not self._present(self.openinsList, pos):
+                if n < self.openings and randint(0, 10) > p and not self._present(self.openinsList, pos):
                     self.openinsList.append((pos, Pos2D(pos.getX(), pos.getY()+1)))
                     n+=1
                         
@@ -173,6 +174,10 @@ class DungeonGenerator:
                     resultat.grill[x][y].down = sp1.grill[x][y].down or sp2.grill[x][y].down
                     resultat.grill[x][y].left = sp1.grill[x][y].left or sp2.grill[x][y].left
                     resultat.grill[x][y].right = sp1.grill[x][y].right or sp2.grill[x][y].right
+        
+        for item in self.openinsList:
+            pos1, pos2 = item
+            resultat.remove_wall(pos1, pos2)
     
         return {
             "grid": resultat
