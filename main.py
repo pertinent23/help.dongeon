@@ -11,7 +11,7 @@ def getArgs():
     parser.add_argument("width", type=int)
     parser.add_argument("height", type=int)
     
-    parser.add_argument("--rooms", metavar="<ROOMS>", type=int, required=False, default=5)
+    parser.add_argument("--rooms", metavar="<ROOMS>", type=int, default=5)
     parser.add_argument("--seed",  metavar="<SEED>", type=int, default=None)
     
     parser.add_argument("--minwidth", metavar="<w>", type=int, default=4)

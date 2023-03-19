@@ -96,6 +96,9 @@ class DungeonGenerator:
         max_width = self.minwidth
         max_height = self.minheight
         
+        if self.rooms < 1 or not nombre_piece_possible_x or not nombre_piece_possible_y:
+            return;
+        
         final_x = self.rooms // nombre_piece_possible_y
         
         if nombre_piece_possible < self.rooms:
@@ -115,15 +118,21 @@ class DungeonGenerator:
                 max_height += interval_y
         
         x = 1
+        y = 1
         n = 0
+        xal = 0
+        yal = 0
         
         if n == self.rooms:
             return n;
         
-        while x < self.width and x+max_width-2 < self.width:
-            y = 1
-            width = self.minwidth if self.minwidth == max_width else randint(self.minwidth, max_width)
-            height = self.minheight if self.minheight == max_height else randint(self.minheight, max_height)
+        while x < self.width and x+max_width-1 < self.width and y+max_height-1 < self.height:
+            xal = randint(0, max_width - self.minwidth)
+            yal = randint(0, max_height - self.minheight)
+            x += xal
+            y += yal
+            width = self.minwidth if self.minwidth == max_width else randint(self.minwidth, max_width - xal)
+            height = self.minheight if self.minheight == max_height else randint(self.minheight, max_height - yal)
             
             piece = Box()
             piece.setPoin1(Pos2D(x, y))
@@ -135,9 +144,13 @@ class DungeonGenerator:
                 return n;
             
             y += height + 2
-            while y < self.height and y+max_height-2 < self.height:
-                width = self.minwidth if self.minwidth == max_width else randint(self.minwidth, max_width)
-                height = self.minheight if self.minheight == max_height else randint(self.minheight, max_height)
+            while y < self.height and y+max_height-1 < self.height and x+max_width-1 < self.width:
+                xal = randint(0, max_width - self.minwidth)
+                yal = randint(0, max_height - self.minheight)
+                x += xal
+                y += yal
+                width = self.minwidth if self.minwidth == max_width else randint(self.minwidth, max_width-xal)
+                height = self.minheight if self.minheight == max_height else randint(self.minheight, max_height-yal)
                 
                 piece = Box()
                 piece.setPoin1(Pos2D(x, y))
