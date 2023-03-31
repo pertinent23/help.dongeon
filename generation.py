@@ -21,6 +21,10 @@ class DungeonGenerator:
     maxheight: int
     
     openings: int
+    view_radius:int
+    bonuses:int
+    bonus_radius:int
+    torch_delay:int
     hard: bool
     
     def __init__(self, params: Namespace):
@@ -34,6 +38,10 @@ class DungeonGenerator:
         self.minheight = params.minheight
         self.maxheight = params.maxheight
         self.openings = params.openings
+        self.bonuses = params.bonuses
+        self.bonus_radius = params.bonus_radius
+        self.torch_delay = params.torch_delay
+        self.view_radius = params.view_radius
         self.hard = params.hard
         self._create_grid()
         self._generer_pieces()
@@ -171,15 +179,34 @@ class DungeonGenerator:
         for box in self.pieces:
             self.grid.isolate_box(box)
     
+    def _generate_point(self):
+        return Pos2D(randint(0, self.width-1), randint(0, self.height-1))
+    
+    def _generate_bonuses(self, start: Pos2D, end: Pos2D):
+        result:list[Pos2D] = list()
+        counter = 0
+        item = None
+        
+        while counter < self.bonuses:
+            item = self._generate_point()
+            
+            if item != start and item != end:
+                result.append(item)
+                counter += 1
+        
+        return result
+    
     def generate(self):
         resultat = Grid(self.width, self.height)
         resultat.grill = [[i.clone() for i in l] for l in self.grid.grill]
+        start:Pos2D = None
+        end:Pos2D = None
         
         if self.hard:
-            resultat = resultat.spanning_tree()
+            resultat, start, end = resultat.spanning_tree()
         else:
-            sp1 = resultat.spanning_tree()
-            sp2 = resultat.spanning_tree()
+            sp1, start, end = resultat.spanning_tree()
+            sp2 = resultat.spanning_tree()[0]
             
             for x in range(0, self.width):
                 for y in range(0, self.height):
@@ -193,5 +220,8 @@ class DungeonGenerator:
             resultat.remove_wall(pos1, pos2)
     
         return {
-            "grid": resultat
+            "grid": resultat,
+            "bonuses": self._generate_bonuses(start, end),
+            "start_position": start,
+            "exit_position": end #Pos2D(self.width-1, self.height-1)
         }

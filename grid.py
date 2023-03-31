@@ -115,7 +115,7 @@ class Grid:
 
         return result
 
-    def _present(self, pile:list[Pos2D], pos:Pos2D):
+    def present(self, pile:list[Pos2D], pos:Pos2D):
         for item in pile:
             if item == pos:
                 return True
@@ -128,7 +128,7 @@ class Grid:
         shuffle(neighbours)
         
         for pos in neighbours:
-            if not self._present(pile, pos):
+            if not self.present(pile, pos):
                 for j in range(0, len(pile)-1):
                     for item in grid.accessible_neighbours(pile[j]):
                         if item != pile[j+1] and (j == 0 or item != pile[j-1]):
@@ -153,4 +153,4 @@ class Grid:
         for item in pairs:
             resultat.remove_wall(item[0], item[1])
         
-        return resultat
+        return (resultat, pile[0], pile[len(pile)-1])

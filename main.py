@@ -1,6 +1,5 @@
 from argparse import ArgumentParser
-from renderer import GridRenderer
-from generation import DungeonGenerator
+from renderer import Renderer
 
 def getArgs():
     parser = ArgumentParser(
@@ -20,9 +19,14 @@ def getArgs():
     parser.add_argument("--maxheight", metavar="<H>", type=int, default=8)
     
     parser.add_argument("--openings", metavar="<N>", type=int, default=2)
+    parser.add_argument("--view-radius", metavar="<R>", type=int, default=6)
+    parser.add_argument("--bonuses", metavar="<B>", type=int, default=2)
+    parser.add_argument("--bonus-radius", metavar="<R>", type=int, default=3)
+    parser.add_argument("--torch-delay", metavar="<D>", type=int, default=7)
     parser.add_argument("--hard", default=False, dest="hard", action="store_true")
     
     return parser.parse_args()
 
-master = DungeonGenerator(getArgs())
-renderer = GridRenderer(master.generate()['grid']).show()
+
+master = Renderer(getArgs())
+master.mainloop()

@@ -1,6 +1,10 @@
 from grid import Grid
 from pos2d import Pos2D
 from grid import Node
+from argparse import Namespace
+from generation import DungeonGenerator
+from player import Player
+from os import system, name
 
 class GridRenderer:
     grill:list[list[str]]
@@ -124,7 +128,6 @@ class GridRenderer:
             for j in range(0, self.grid.width*4+1):
                 self.grill[i].append(' ')
                 
-    
     def show(self):
         row = ""
         for line in self.grill:
@@ -132,3 +135,83 @@ class GridRenderer:
             for data in line:
                 row += data
             print(row)
+    
+    def _affectContent(self, case: Pos2D, content: str):
+        self.grill[case.getY()*2 + 1][case.getX()*4 + 2] = content
+        
+    def addContent(self, case: Pos2D, content: str):
+        self._affectContent(case, content)
+    
+    def removeContent(self, case:Pos2D):
+        self._affectContent(case, ' ')
+
+
+class Renderer:
+    generator: DungeonGenerator
+    renderer: GridRenderer
+    grid: Grid
+    bonuses: list[Pos2D]
+    start_position: Pos2D
+    exit_position: Pos2D
+    end: bool
+    light: int
+    level: int
+    player: Player
+    
+    def __init__(self, metadata: Namespace):
+        self.generator = DungeonGenerator(metadata)
+        self.end = False
+        self.light = self.generator.view_radius
+        self.level = self.generator.torch_delay
+        
+        data = self.generator.generate()
+        
+        self.grid = data.get('grid') 
+        self.bonuses = data.get('bonuses')
+        self.start_position = data.get('start_position') 
+        self.exit_position = data.get('exit_position')
+        
+        self.renderer = GridRenderer(self.grid)
+        self.renderer.addContent(self.start_position, 'X')
+        
+        for pos in self.bonuses:
+            self.renderer.addContent(pos, '@')
+        self.renderer.addContent(self.exit_position, '#')
+
+        self.player = Player(self.start_position, self.grid)
+        
+    def mainloop(self):
+        self.renderer.show()
+        
+        while not self.end:
+            direction = str(input('>> Direction: ')).strip()
+            
+            if name in ['posix', 'nt', 'java']:
+                system('clear')
+            else:
+                system('cls')
+                
+            if self.player.move(direction):
+                self.level -= 1
+            
+            if self.level == 0:
+                self.light -= 1
+                self.level = self.generator.torch_delay
+            
+            if self.light <= 0:
+                self.end = True
+                
+            self.renderer.removeContent(self.start_position)
+            self.start_position = self.player.pos
+            self.renderer.addContent(self.start_position, 'X')
+            
+            if self.grid.present(self.bonuses, self.start_position):
+                self.light += self.generator.bonus_radius
+                
+                if self.light > self.generator.view_radius:
+                    self.light = self.generator.view_radius
+            
+            elif self.start_position == self.exit_position:
+                self.end = True
+            
+            self.renderer.show()
