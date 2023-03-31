@@ -5,9 +5,11 @@ from argparse import Namespace
 from generation import DungeonGenerator
 from player import Player
 from os import system, name
+from math import sqrt
 
 class GridRenderer:
     grill:list[list[str]]
+    view:list[list[str]]
     grid:Grid
     
     def __init__(self, grid: Grid):
@@ -21,6 +23,10 @@ class GridRenderer:
                 self.make(node, x, y)
     
         self.createBorder()
+        self.copy()
+        
+    def copy(self):
+        self.view = [[i for i in o] for o in self.grill]
         
     def createBorder(self):
         for x in range(0, self.grid.width):
@@ -127,10 +133,37 @@ class GridRenderer:
             self.grill.append([])
             for j in range(0, self.grid.width*4+1):
                 self.grill[i].append(' ')
-                
+    
+    def _dist(self, p1: Pos2D, p2: Pos2D):
+        return sqrt((p2.getX()-p1.getX())**2 + (p2.getY()-p1.getY())**2)
+    
+    def setToch(self, toch: Pos2D, raduis: int, end: Pos2D):
+        self.copy()
+        for y in range(0, self.grid.height):
+            for x in range(0, self.grid.width):
+                if not (self._dist(Pos2D(x, y), toch) <= raduis):
+                    self.view[y*2][x*4] = ' '
+                    self.view[y*2][x*4 + 1] = ' '
+                    self.view[y*2][x*4 + 2] = ' '
+                    self.view[y*2][x*4 + 3] = ' '
+                    self.view[y*2][x*4 + 4] = ' '
+                    self.view[y*2 + 1][x*4] = ' '
+                    self.view[y*2 + 2][x*4] = ' '
+                    self.view[y*2 + 1][x*4 + 4] = ' '
+                    self.view[y*2 + 1][x*4 + 3] = ' '
+                    self.view[y*2 + 1][x*4 + 1] = ' '
+                    self.view[y*2 + 2][x*4 + 1] = ' '
+                    self.view[y*2 + 2][x*4 + 2] = ' '
+                    self.view[y*2 + 2][x*4 + 3] = ' '
+                    self.view[y*2 + 2][x*4 + 4] = ' '
+                    
+                    #pour éviter d'effacer le #
+                    if Pos2D(x, y) != end:
+                        self.view[y*2 + 1][x*4 + 2] = ' '
+        
     def show(self):
         row = ""
-        for line in self.grill:
+        for line in self.view:
             row = ""
             for data in line:
                 row += data
@@ -181,6 +214,7 @@ class Renderer:
         self.player = Player(self.start_position, self.grid)
         
     def mainloop(self):
+        self.renderer.setToch(self.start_position, self.light, self.exit_position)
         self.renderer.show()
         
         while not self.end:
@@ -214,4 +248,6 @@ class Renderer:
             elif self.start_position == self.exit_position:
                 self.end = True
             
+            
+            self.renderer.setToch(self.start_position, self.light, self.exit_position)
             self.renderer.show()
